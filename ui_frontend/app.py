@@ -9,8 +9,8 @@ from pathlib import Path
 import streamlit as st
 
 # Paths to your binary and model
-BINARY_PATH = "./face_cropper"       # "./face_cropper.exe" on Windows
-MODEL_PATH = "./model.onnx"
+BINARY_PATH = "./face_cropper_linux_package/face_cropper"
+MODEL_PATH = "./face_cropper_linux_package/model.onnx"
 
 def save_uploaded_file(uploaded_file, input_path: Path):
     with open(input_path, "wb") as f:
@@ -64,24 +64,43 @@ if run_button:
                 output_dir = Path(tempfile.mkdtemp(prefix="fc_output_"))
                 input_path = input_dir / file.name
                 save_uploaded_file(file, input_path)
+                import os
 
+                # Ensure symlinks are created (only on Linux)
+                lib_dir = Path("face_cropper_linux_package/runtimeLib")
+                try:
+                    (lib_dir / "libonnxruntime.so.1").symlink_to("libonnxruntime.so.1.16.0")
+                except FileExistsError:
+                    pass
+                try:
+                    (lib_dir / "libonnxruntime.so").symlink_to("libonnxruntime.so.1")
+                except FileExistsError:
+                    pass
+
+                # Construct full command with LD_LIBRARY_PATH export and binary call
                 cmd = [
-                    BINARY_PATH,
-                    "--input-dir", str(input_dir),
-                    "--output-dir", str(output_dir),
-                    "--model", MODEL_PATH,
-                    "--conf-threshold", str(conf_threshold),
-                    "--iou-threshold", str(iou_threshold),
-                    "--brightness-jitter", str(brightness_jitter),
-                    "--no-recursive"
+                    "bash", "-c",
+                    f"export LD_LIBRARY_PATH={lib_dir}:$LD_LIBRARY_PATH && "
+                    f"./face_cropper_linux_package/face_cropper "
+                    f"--input-dir '{input_dir}' "
+                    f"--output-dir '{output_dir}' "
+                    f"--model './face_cropper_linux_package/model.onnx' "
+                    f"--conf-threshold {conf_threshold} "
+                    f"--iou-threshold {iou_threshold} "
+                    f"--brightness-jitter {brightness_jitter} "
+                    f"--no-recursive"
                 ]
 
+                # Run the subprocess and handle errors
                 result = subprocess.run(cmd, capture_output=True, text=True)
                 if result.returncode != 0:
                     skipped_files.append((file.name, result.stderr.strip()))
                     shutil.rmtree(input_dir)
                     shutil.rmtree(output_dir)
                     continue
+
+
+              
 
                 face_files = list(output_dir.glob("*.jpg")) + list(output_dir.glob("*.jpeg")) + list(output_dir.glob("*.png"))
 
