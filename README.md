@@ -8,6 +8,12 @@ This repository provides a complete pipeline to generate face image datasets fro
 
 - A Streamlit-based frontend UI to run face cropping from the browser.
 
+## Quick UI Demonstration
+
+
+
+https://github.com/user-attachments/assets/3af58bf1-6acb-4ee1-ac90-1cb992604575
+
 
 ## Project Structure
 
