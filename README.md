@@ -8,6 +8,8 @@ This repository provides a complete pipeline to generate face image datasets fro
 
 - A Streamlit-based frontend UI to run face cropping from the browser.
 
+Final Dataset [https://huggingface.co/datasets/Mayank022/Cropped_Face_Dataset_128x12](https://huggingface.co/datasets/Mayank022/Cropped_Face_Dataset_128x128)
+
 ## Quick UI Demonstration
 
 
@@ -97,7 +99,7 @@ The system is designed to robustly handle various edge cases during face detecti
 ---
 
 ### 6. Invalid or Corrupt Input Files
-![MacBook Air - 79](https://github.com/user-attachments/assets/03d1cc8f-228c-4f47-856f-3c55c7ed1241)
+
 
 **Handling:** Skipped silently unless log level is set to debug
 **Example:**
@@ -145,7 +147,7 @@ dos2unix run.sh
 
 ### Make the Script Executable
 
-The project provides two scripts (run.sh[for single image processing] & run_multiple_images.sh[for batch processing]) depending on whether you're processing a single image (from UI) or an entire folder of images (batch processing).
+The project provides two scripts (`run.sh` for single image processing & `run_multiple_images.sh` for batch processing) depending on whether you're processing a single image (from UI) or an entire folder of images (batch processing).
 
 
 
@@ -296,6 +298,8 @@ You can test with 1–2 sample images inside `input_images/`, then inspect `face
 ### 3. Running the Fronted Streamlit UI
 To launch the drag-and-drop face cropping interface:
 
+https://github.com/user-attachments/assets/3af58bf1-6acb-4ee1-ac90-1cb992604575
+
 #### Step 1: Navigate to the frontend directory
 
 ```bash
@@ -305,7 +309,8 @@ cd ui_frontend
 #### Step 2: Install required Python dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install streamlit>=1.25 Pillow>=9.0
+
 ```
 
 #### Step 3: Start the Streamlit application
@@ -329,9 +334,7 @@ http://localhost:8501/
 * Automatically detect and crop faces to 128×128 resolution.
 * Download the cropped faces directly from the interface.
 
-Here’s a more structured, clean, and professional version of the **Technologies Used** section for your `README.md`:
 
----
 
 ## Technologies Used
 
@@ -339,12 +342,91 @@ The project leverages the following tools and libraries for efficient face detec
 
 | Technology               | Description                                                                  |
 | ------------------------ | ---------------------------------------------------------------------------- |
-| **Rust (2021 Edition)**  | Core implementation for high-performance inference and image processing      |
+| **Rust**  | Core implementation for high-performance inference and image processing      |
 | **ONNX Runtime 1.16.0**  | Used for model inference via the [`ort`](https://crates.io/crates/ort) crate |
 | **YOLOv11-Face Model**    | Pre-trained face detection model exported in ONNX format                     |
 | **Streamlit** (optional) | Web-based UI for drag-and-drop image upload and preview                      |
 
 ---
+
+## Running the Face Cropper (Rust)
+
+This section provides instructions for compiling and running the `face_cropper` binary from source using Rust.
+
+### Prerequisites
+
+To build and run the project, ensure the following tools are installed on your system:
+
+- [Rust](https://www.rust-lang.org/tools/install) (with `cargo`)
+- `libonnxruntime` shared libraries (Linux) or the ONNX Runtime DLLs (Windows)
+- A working C++ toolchain (for `ort` crate)
+
+You can verify Rust installation with:
+
+```bash
+rustc --version
+cargo --version
+````
+
+### Project Structure
+
+The binary entry point is defined in `src/main.rs` via the `[bin]` section in `Cargo.toml`:
+
+```toml
+[[bin]]
+name = "face_cropper"
+path = "src/main.rs"
+```
+
+### Cargo Dependencies
+
+The project depends on the following crates:
+
+```toml
+[dependencies]
+image        = "0.24.7"       # For image loading and resizing
+ndarray      = "0.15.6"       # For constructing input tensors
+ort          = "1.15.2"       # ONNX Runtime bindings
+walkdir      = "2.3.3"        # Directory traversal
+log          = "0.4"          # Logging macros
+env_logger   = "0.10"         # Logger initialization
+rayon        = "1.5"          # Parallel image processing
+rand         = "0.8"          # Augmentations (e.g. flips)
+clap         = { version = "4.1", features = ["derive"] } # Command-line interface
+```
+
+Make sure these are present in your `Cargo.toml`.
+
+### Build Instructions
+
+To build the optimized release binary:
+
+```bash
+cargo build --release
+```
+
+This will generate the binary at:
+
+```
+target/release/face_cropper
+```
+
+### Running the Binary
+
+Once built, the binary can be executed using:
+
+```bash
+./target/release/face_cropper \
+  --input-dir ./input_images \
+  --output-dir ./faces_cropped \
+  --model ./model.onnx \
+  --batch-size 10 \
+  --conf-threshold 0.5 \
+  --iou-threshold 0.5 \
+  --brightness-jitter 30 \
+  --no-recursive
+```
+
 
 
 
