@@ -145,6 +145,10 @@ dos2unix run.sh
 
 ### Make the Script Executable
 
+The project provides two scripts (run.sh[for single image processing] & run_multiple_images.sh[for batch processing]) depending on whether you're processing a single image (from UI) or an entire folder of images (batch processing).
+
+
+
 Run:
 
 ```bash
@@ -198,6 +202,65 @@ Now simply run the script:
      --brightness-jitter 30 \
      --no-recursive
    ```
+
+---
+
+
+###  `run_multiple_images.sh` – For Batch Processing
+
+
+
+
+
+Use this script when you want to process an **entire folder of images** without using the UI. It runs inference on all valid images inside the `input_images/` directory and saves cropped faces to `faces_cropped/`.
+
+#### Setup and Execution
+
+```bash
+dos2unix run_multiple_images.sh     # Optional, if cloned on Windows
+chmod +x run_multiple_images.sh     # Make the script executable
+./run_multiple_images.sh            # Run the script
+```
+https://github.com/user-attachments/assets/b9f35f14-4cd9-45c9-aba7-7414004fe263
+
+Output images after running a script to rename in sequence
+![image](https://github.com/user-attachments/assets/35d07fcd-a80f-4474-813c-2dbd731cdb0a)
+
+## CLI Arguments – Full Control via Command Line
+
+
+You can run the face cropper with granular control using CLI flags. Here’s an overview of all available options:
+
+### Command
+
+```bash
+./face_cropper \
+  --input-dir ./input_images \
+  --output-dir ./faces_cropped \
+  --model ./model.onnx \
+  --batch-size 10 \
+  --conf-threshold 0.5 \
+  --iou-threshold 0.5 \
+  --brightness-jitter 30 \
+  --no-recursive
+```
+![image](https://github.com/user-attachments/assets/c32c99ed-380e-4024-9f23-1b548db2a9d2)
+>  You can customize each parameter to control performance, detection accuracy, and output structure as needed.
+
+---
+
+###  Flag Reference Table
+
+| Flag                  | Description                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| `--input-dir`         | Path to the directory containing the input images.                                   |
+| `--output-dir`        | Path where cropped face images will be saved.                                        |
+| `--model`             | Path to the ONNX model file used for face detection.                                 |
+| `--batch-size`        | Number of images processed in one batch. Higher values may use more memory.          |
+| `--conf-threshold`    | Minimum confidence score (0–1) to accept a detected face.                            |
+| `--iou-threshold`     | IOU threshold for non-max suppression (NMS). Filters overlapping boxes.              |
+| `--brightness-jitter` | Random brightness jitter added to output images (for augmentation).                  |
+| `--no-recursive`      | Disables recursive folder traversal. Only files in the top-level directory are used. |
 
 ---
 
