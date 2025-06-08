@@ -2,6 +2,10 @@
 ![1](https://github.com/user-attachments/assets/17db8612-91ee-467c-a4f8-83ddf25382d7)
 This repository provides a complete pipeline to generate face image datasets from a batch of images using YOLOv11-face-detection ONNX inference in Rust. It includes:
 
+
+https://github.com/user-attachments/assets/71cac7ac-9a6a-4f74-bbdb-31bca9cc0927
+
+
 - A high-performance Rust binary (`face_cropper`) for batch inference and face cropping.
 
 - A portable Linux package (`face_cropper_linux_package`) with ONNX runtime pre-bundled.
@@ -227,6 +231,87 @@ https://github.com/user-attachments/assets/b9f35f14-4cd9-45c9-aba7-7414004fe263
 
 Output images after running a script to rename in sequence
 ![image](https://github.com/user-attachments/assets/35d07fcd-a80f-4474-813c-2dbd731cdb0a)
+
+## Frontend UI Setup on Linux Cloud (ONNX Runtime + Streamlit)
+
+This section helps you set up and run the drag-and-drop Streamlit interface for the face cropper binary on a fresh Linux machine (tested on Amazon Linux 2023 EC2 instance).
+
+---
+
+### 1 Install Dependencies
+
+```bash
+sudo dnf install -y git wget dos2unix gcc gcc-c++ make libstdc++ python3 pip
+sudo pip install --upgrade pip
+pip install streamlit Pillow
+```
+
+---
+
+### 2 Clone This Repository
+
+```bash
+git clone https://github.com/Mayankpratapsingh022/Face_Cropper_128-128-Rust_ONNX_Inference_with_Frontend
+cd Face_Cropper_128-128-Rust_ONNX_Inference_with_Frontend
+```
+
+---
+
+### 3 Prepare the Linux Binary Package
+
+```bash
+cd face_cropper_linux_package
+dos2unix run.sh && chmod +x run.sh face_cropper
+```
+
+---
+
+### 4 Install ONNX Runtime for Linux
+
+```bash
+cd runtimeLib
+rm -f libonnxruntime.so libonnxruntime.so.1 libonnxruntime.so.1.16.0
+
+wget -q https://github.com/microsoft/onnxruntime/releases/download/v1.16.0/onnxruntime-linux-x64-1.16.0.tgz
+tar -xzf onnxruntime-linux-x64-1.16.0.tgz -C . \
+  --strip-components=2 \
+  onnxruntime-linux-x64-1.16.0/lib/libonnxruntime.so.1.16.0
+
+# Create symlinks
+ln -sf libonnxruntime.so.1.16.0 libonnxruntime.so.1
+ln -sf libonnxruntime.so.1       libonnxruntime.so
+
+cd ../..
+```
+
+---
+
+### 5 Export Runtime Path
+
+```bash
+export LD_LIBRARY_PATH=$PWD/face_cropper_linux_package/runtimeLib:$LD_LIBRARY_PATH
+```
+
+---
+
+### 6 Run CLI Test (Optional)
+
+```bash
+./face_cropper_linux_package/run.sh
+```
+
+---
+
+### 7 Launch Streamlit Frontend
+
+```bash
+streamlit run ui_frontend/app.py --server.port 8501 --server.address 0.0.0.0
+```
+
+Make sure your EC2 security group allows inbound traffic on port `8501`.
+
+---
+
 
 ## CLI Arguments – Full Control via Command Line
 
